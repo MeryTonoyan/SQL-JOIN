@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="hy">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SQL JOIN Homework — Shop UI (Mock Data)</title>
+
+    <style>
+        :root{
+            --navy:#0f2b46;
+            --navy2:#2C74B3;
+            --soft:#f5f7fb;
+            --muted:#6c7a90;
+            --radius:18px;
+            --border:#d8e1ef;
+
+            --paid:#d4edda;
+            --unpaid:#f8d7da;
+            --unknown:#fff3cd;
+
+            --shadow: 0 10px 22px rgba(15,43,70,.08);
+            --white:#fff;
+        }
+        *{ box-sizing:border-box; }
+        body{
+            margin:0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: var(--soft);
+            color:#1c2b3a;
+        }
+        .container{
+            max-width: 1200px;
+            margin: 22px auto;
+            padding: 0 16px 50px;
+        }
+
+        .topbar{
+            background: linear-gradient(135deg, var(--navy2), var(--navy));
+            color:#fff;
+            border-radius: var(--radius);
+            padding: 16px 16px;
+            box-shadow: var(--shadow);
+            display:flex;
+            gap:14px;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .topbar h1{ margin:0; font-size: 18px; }
+        .topbar .sub{ margin:6px 0 0; opacity:.9; font-size: 12px; line-height:1.35; }
+
+        .btn{
+            border:0;
+            cursor:pointer;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 13px;
+            transition: transform .08s ease, opacity .2s ease;
+        }
+        .btn:active{ transform: translateY(1px); }
+        .btn.primary{ background:#fff; color: var(--navy); }
+        .btn.ghost{
+            background: rgba(255,255,255,.14);
+            color:#fff;
+            border:1px solid rgba(255,255,255,.25);
+        }
+
+        .layout{
+            margin-top: 14px;
+            display:grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+        }
+        @media (min-width: 980px){
+            .layout{ grid-template-columns: 1fr 360px; }
+        }
+
+        .panel{
+            background: var(--white);
+            border:1px solid var(--border);
+            border-radius: var(--radius);
+            overflow:hidden;
+            box-shadow: var(--shadow);
+        }
+        .panel-head{
+            padding: 14px 14px 12px;
+            border-bottom:1px solid var(--border);
+            display:flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .panel-title{
+            margin:0;
+            font-size: 14px;
+            font-weight: 900;
+            color: var(--navy);
+            display:flex;
+            gap:10px;
+            align-items:center;
+        }
+        .tag{
+            font-size: 11px;
+            font-weight: 800;
+            padding: 6px 10px;
+            border-radius: 999px;
+            border:1px solid var(--border);
+            background:#f7fbff;
+            color: var(--navy2);
+            white-space: nowrap;
+        }
+        .panel-body{ padding: 12px 14px 14px; }
+
+        .tabs{
+            display:flex;
+            gap:8px;
+            flex-wrap: wrap;
+        }
+        .tab{
+            border:1px solid var(--border);
+            background:#fff;
+            color:#223;
+            font-weight: 900;
+            font-size: 12px;
+            padding: 8px 10px;
+            border-radius: 999px;
+            cursor:pointer;
+            transition: .15s;
+        }
+        .tab.active{
+            background: #eaf3ff;
+            border-color: #cfe3ff;
+            color: var(--navy);
+        }
+
+        .grid{
+            display:grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+        @media (min-width: 600px){
+            .grid{ grid-template-columns: 1fr 1fr; }
+        }
+        @media (min-width: 980px){
+            .grid{ grid-template-columns: 1fr 1fr 1fr; }
+        }
+
+        .card{
+            border:1px solid var(--border);
+            border-radius: 16px;
+            overflow:hidden;
+            background:#fff;
+            display:flex;
+            flex-direction: column;
+            min-height: 170px;
+        }
+        .card-top{
+            padding: 12px 12px 10px;
+            display:flex;
+            justify-content: space-between;
+            gap: 10px;
+            align-items:flex-start;
+            border-bottom:1px solid var(--border);
+            background: #fbfdff;
+        }
+        .badge{
+            font-size: 11px;
+            font-weight: 900;
+            padding: 6px 10px;
+            border-radius: 999px;
+            border:1px solid var(--border);
+            white-space: nowrap;
+        }
+        .badge.paid{ background: var(--paid); }
+        .badge.unpaid{ background: var(--unpaid); }
+        .badge.unknown{ background: var(--unknown); }
+
+        .card-title{
+            margin:0;
+            font-size: 13px;
+            font-weight: 900;
+            color: var(--navy);
+            line-height:1.25;
+        }
+        .card-sub{
+            margin:6px 0 0;
+            font-size: 12px;
+            color: var(--muted);
+            line-height:1.35;
+        }
+
+        .card-mid{
+            padding: 12px;
+            display:grid;
+            gap: 8px;
+        }
+        .kv{
+            display:flex;
+            justify-content: space-between;
+            gap: 10px;
+            font-size: 12px;
+            color:#2b3a4a;
+        }
+        .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+
+        .card-actions{
+            margin-top:auto;
+            padding: 12px;
+            display:flex;
+            gap: 10px;
+            align-items:center;
+            justify-content: space-between;
+            border-top:1px solid var(--border);
+        }
+        .price{
+            font-weight: 1000;
+            color: #101c2a;
+        }
+        .add{
+            padding: 10px 12px;
+            border-radius: 12px;
+            border:0;
+            cursor:pointer;
+            font-weight: 900;
+            background: var(--navy2);
+            color:#fff;
+        }
+        .add:disabled{ opacity:.45; cursor:not-allowed; }
+
+        .cart-list{
+            display:grid;
+            gap:10px;
+        }
+        .cart-item{
+            border:1px solid var(--border);
+            border-radius: 14px;
+            padding: 10px 10px;
+            background:#fff;
+        }
+        .cart-item .t{
+            font-weight: 900;
+            color: var(--navy);
+            font-size: 12px;
+            margin:0 0 6px;
+            line-height:1.25;
+        }
+        .cart-item .m{
+            font-size: 12px;
+            color: var(--muted);
+            display:flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .qty{
+            display:flex;
+            align-items:center;
+            gap: 8px;
+            margin-top: 8px;
+            justify-content: space-between;
+        }
+        .qty .controls{ display:flex; gap: 6px; align-items:center; }
+        .mini{
+            border:1px solid var(--border);
+            background:#fff;
+            padding: 6px 10px;
+            border-radius: 10px;
+            cursor:pointer;
+            font-weight: 900;
+            font-size: 12px;
+        }
+        .mini.danger{
+            border-color:#ffd0d0;
+            background:#fff2f2;
+            color:#8a1f1f;
+        }
+
+        .summary{
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top:1px dashed var(--border);
+            display:grid;
+            gap: 6px;
+            font-size: 12px;
+            color:#2b3a4a;
+        }
+        .summary .row{ display:flex; justify-content: space-between; gap:10px; }
+        .empty{
+            padding: 12px;
+            border:1px dashed var(--border);
+            border-radius: 14px;
+            color: var(--muted);
+            font-size: 12px;
+            background:#fbfdff;
+            text-align:center;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <div class="topbar">
+        <div>
+            <h1>SQL JOIN Homework — Shop UI (Mock Data)</h1>
+            <div class="sub">
+                INNER/LEFT/RIGHT տվյալները JS-ի մեջ են։ Tabs-ով փոխիր join-ը, ավելացրու քարտերը Cart։
+                <span class="mono">status: paid | unpaid | unknown</span>
+            </div>
+        </div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn primary" id="btnReset">Reset data</button>
+            <button class="btn ghost" id="btnClearCart">Clear cart</button>
+        </div>
+    </div>
+
+    <div class="layout">
+
+        <!-- SHOP -->
+        <section class="panel">
+            <div class="panel-head">
+                <div class="panel-title">
+                    Shop
+                    <span class="tag" id="tagInfo">INNER • 0 items</span>
+                </div>
+                <div class="tabs" id="tabs">
+                    <button class="tab active" data-tab="inner">INNER</button>
+                    <button class="tab" data-tab="left">LEFT</button>
+                    <button class="tab" data-tab="right">RIGHT</button>
+                </div>
+            </div>
+
+            <div class="panel-body">
+                <div class="grid" id="grid"></div>
+            </div>
+        </section>
+
+        <!-- CART -->
+        <aside class="panel">
+            <div class="panel-head">
+                <div class="panel-title">
+                    Cart
+                    <span class="tag" id="cartCount">0 items</span>
+                </div>
+                <button class="btn ghost" id="btnCartClear" style="padding:8px 10px; font-size:12px;">
+                    Clear cart
+                </button>
+            </div>
+
+            <div class="panel-body">
+                <div class="cart-list" id="cartList"></div>
+
+                <div class="summary" id="summary">
+                    <div class="row"><span>Total qty</span><b id="sumQty">0</b></div>
+                    <div class="row"><span>Total amount</span><b class="mono" id="sumAmount">0</b></div>
+                </div>
+            </div>
+        </aside>
+
+    </div>
+</div>
+
+<script>
+    // =========================
+    // ✅ MOCK DATA (NO SERVER)
+    // =========================
+    const DB = {
+        students: [
+            { id: 1, name: "Narek", group: "JS-1" },
+            { id: 2, name: "Anna",  group: "JS-1" },
+            { id: 3, name: "Gevorg",group: "JS-2" },
+            { id: 4, name: "Meri",  group: "JS-2" },
+            { id: 5, name: "Arman", group: "JS-3" },
+            { id: 6, name: "Lilit", group: "JS-3" },
+        ],
+        payments: [
+            { id: 1, student_id: 1, amount: 55000, month: "January" },
+            { id: 2, student_id: 2, amount: 55000, month: "January" },
+            { id: 3, student_id: 3, amount: 70000, month: "January" },
+            { id: 4, student_id: 2, amount: 55000, month: "February" },
+            { id: 5, student_id: 7, amount: 55000, month: "January" }, // ❗ Unknown student (no student with id=7)
+            { id: 6, student_id: 1, amount: 55000, month: "February" },
+        ]
+    };
+
+    // INNER JOIN result (only matching student + payment)
+    function buildInner(){const t=new Map(DB.students.map((t=>[t.id,t])));return DB.payments.filter((e=>t.has(e.student_id))).map((e=>{const n=t.get(e.student_id);return{id:String(e.id),name:n.name,group:n.group,month:e.month,amount:e.amount,status:"paid"}}))}function buildLeft(){const t=new Map;return DB.payments.forEach((e=>{"January"===e.month&&t.set(e.student_id,e)})),DB.students.map((e=>{const n=t.get(e.id);return{id:String(e.id),name:e.name,group:e.group,month:"January",amount:n?n.amount:null,status:n?"paid":"unpaid"}}))}function buildRight(){const t=new Map(DB.students.map((t=>[t.id,t])));return DB.payments.map((e=>{const n=t.get(e.student_id);return{id:String(e.id),name:n?n.name:"Unknown student",group:n?n.group:"—",month:e.month,amount:e.amount,status:n?"paid":"unknown"}}))}const state={activeTab:"inner",data:{inner:[],left:[],right:[]},cart:new Map},el={grid:document.getElementById("grid"),tagInfo:document.getElementById("tagInfo"),tabs:document.getElementById("tabs"),btnReset:document.getElementById("btnReset"),btnClearCart:document.getElementById("btnClearCart"),cartList:document.getElementById("cartList"),cartCount:document.getElementById("cartCount"),btnCartClear:document.getElementById("btnCartClear"),sumQty:document.getElementById("sumQty"),sumAmount:document.getElementById("sumAmount")};function loadMockData(){state.data.inner=buildInner(),state.data.left=buildLeft(),state.data.right=buildRight()}function renderShop(){const t=state.data[state.activeTab]||[];el.tagInfo.textContent=`${state.activeTab.toUpperCase()} • ${t.length} items`,t.length?(el.grid.innerHTML=t.map((t=>cardHtml(t))).join(""),el.grid.querySelectorAll("[data-add]").forEach((e=>{e.addEventListener("click",(()=>{const n=e.getAttribute("data-add"),a=t.find((t=>t.id===n));a&&addToCart(a)}))}))):el.grid.innerHTML='<div class="empty">Դատարկ տվյալներ։ Սեղմիր “Reset data”</div>'}function cardHtml(t){const e=t.status,n=t.status.toUpperCase(),a=null===t.amount?"unpaid"===t.status?"Չի վճարել":"—":t.amount.toLocaleString("en-US"),s="unpaid"===t.status,d=s?"Unpaid":"Add to cart";return`\n        <article class="card">\n          <div class="card-top">\n            <div>\n              <h3 class="card-title">${escapeHtml(t.name)}</h3>\n              <div class="card-sub">Group: <b>${escapeHtml(t.group)}</b></div>\n            </div>\n            <span class="badge ${e}">${escapeHtml(n)}</span>\n          </div>\n\n          <div class="card-mid">\n            <div class="kv"><span>Month</span><b>${escapeHtml(t.month)}</b></div>\n            <div class="kv"><span>ID</span><b class="mono">${escapeHtml(t.id)}</b></div>\n            <div class="kv"><span>Amount</span><b class="mono">${escapeHtml(a)}</b></div>\n          </div>\n\n          <div class="card-actions">\n            <div class="price mono">${escapeHtml(a)}</div>\n            <button class="add" data-add="${escapeHtml(t.id)}" ${s?"disabled":""}>${escapeHtml(d)}</button>\n          </div>\n        </article>\n      `}function addToCart(t){const e=t.id+"::"+state.activeTab,n=state.cart.get(e);n?n.qty+=1:state.cart.set(e,{item:{...t,_tab:state.activeTab},qty:1}),renderCart()}function changeQty(t,e){const n=state.cart.get(t);n&&(n.qty+=e,n.qty<=0&&state.cart.delete(t),renderCart())}function removeItem(t){state.cart.delete(t),renderCart()}function renderCart(){const t=Array.from(state.cart.entries()),e=t.reduce(((t,[e,n])=>t+n.qty),0);if(el.cartCount.textContent=`${e} items`,0===t.length)return el.cartList.innerHTML='<div class="empty">Cart-ը դատարկ է</div>',el.sumQty.textContent="0",void(el.sumAmount.textContent="0");let n=0,a=0;el.cartList.innerHTML=t.map((([t,e])=>{const{item:s,qty:d}=e;n+=d;const c=(s.amount??0)*d;a+=c;const r=null===s.amount?"—":s.amount.toLocaleString("en-US");return`\n          <div class="cart-item">\n            <div class="t">${escapeHtml(s.name)} <span class="mono" style="opacity:.7;">#${escapeHtml(s.id)}</span></div>\n            <div class="m">\n              <span>${escapeHtml(s.group)} • ${escapeHtml(s.month)} • <span class="mono">${escapeHtml(s._tab.toUpperCase())}</span></span>\n              <b class="mono">${escapeHtml(r)}</b>\n            </div>\n\n            <div class="qty">\n              <div class="controls">\n                <button class="mini" data-dec="${escapeHtml(t)}">−</button>\n                <b class="mono">${d}</b>\n                <button class="mini" data-inc="${escapeHtml(t)}">+</button>\n              </div>\n              <div class="controls">\n                <button class="mini danger" data-rm="${escapeHtml(t)}">Remove</button>\n              </div>\n            </div>\n          </div>\n        `})).join(""),el.sumQty.textContent=String(n),el.sumAmount.textContent=a.toLocaleString("en-US"),el.cartList.querySelectorAll("[data-inc]").forEach((t=>t.addEventListener("click",(()=>changeQty(t.dataset.inc,1))))),el.cartList.querySelectorAll("[data-dec]").forEach((t=>t.addEventListener("click",(()=>changeQty(t.dataset.dec,-1))))),el.cartList.querySelectorAll("[data-rm]").forEach((t=>t.addEventListener("click",(()=>removeItem(t.dataset.rm)))))}function escapeHtml(t){return String(t??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}el.tabs.addEventListener("click",(t=>{const e=t.target.closest(".tab");e&&(document.querySelectorAll(".tab").forEach((t=>t.classList.remove("active"))),e.classList.add("active"),state.activeTab=e.dataset.tab,renderShop())})),el.btnReset.addEventListener("click",(()=>{loadMockData(),renderShop()})),el.btnClearCart.addEventListener("click",(()=>{state.cart.clear(),renderCart()})),el.btnCartClear.addEventListener("click",(()=>{state.cart.clear(),renderCart()})),loadMockData(),renderShop(),renderCart();
+</script>
+</body>
+</html>
